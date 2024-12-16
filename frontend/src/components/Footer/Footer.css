@@ -1,0 +1,25 @@
+.sticky-bar {
+    position: fixed;
+    width: 100%;
+    top: 50%;
+    transform: translateY(-50%);
+    padding: 1em;
+    display: flex;
+    font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
+    mix-blend-mode: difference;
+    z-index: 100;
+}
+
+.sticky-bar .item:nth-child(1),
+.sticky-bar .item:nth-child(3) {
+    flex: 2;
+}
+
+.sticky-bar .item:nth-child(3) {
+    text-align: right;
+}
+
+.sticky-bar .item p{
+    color: #fff;
+    font-size: 1.25vw;
+}
