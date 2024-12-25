@@ -4,10 +4,11 @@ import { FaShoppingCart } from "react-icons/fa";
 import { MdOutlineLabelImportant } from "react-icons/md";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
-import { addToCart } from "../../slices/CartSlice";
 import toast from "react-hot-toast";
+import { addToCart } from "../../redux/slices/CartSlice";
 
 const Product = (props) => {
+  const path = 'http://127.0.0.1:8000'
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const productId = props._id;
@@ -24,13 +25,7 @@ const Product = (props) => {
 
   const handleAddToCart = () => {
     dispatch(
-      addToCart({
-        _id: props._id,
-        name: props.productName,
-        quantity: 1,
-        image: props.img,
-        price: props.price,
-      })
+      addToCart(productId,1 )
     );
     toast.success("Item added to cart!", {
       duration: 2000,
@@ -50,7 +45,7 @@ const Product = (props) => {
       {/* Image Container */}
       <div className="relative w-full h-64 overflow-hidden">
         <img
-          src={props.img}
+          src={path + props.img}
           alt={props.productName}
           className="w-full h-full object-contain p-4 transition-transform duration-500 group-hover:scale-105"
           onClick={handleProductDetails}

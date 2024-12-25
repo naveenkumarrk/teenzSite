@@ -1,11 +1,12 @@
 import axios from 'axios';
 
 class ProductAPI {
-  async getProductList(keyword= '' , pageNumber = '') {
+  async getProductList() {
     try {
-      const { data } = await axios.get(`/api/products`);
-      return data;
+      const response = await axios.get(`/api/products`);
+      return response.data;
     } catch (error) {
+      console.error("Error fetching products:", error);
       throw error.response && error.response.data.detail
         ? error.response.data.detail
         : error.message;
@@ -14,9 +15,9 @@ class ProductAPI {
   
   async getProductDetails(productId) {
     try {
-      const { data } = await axios.get(`/api/products/${productId}`);
-      console.log(data)
-      return data;      
+      const response = await axios.get(`/api/products/${productId}`)
+      console.log(response)
+      return response.data;      
     } catch (error) {
       throw error.response && error.response.data.detail
         ? error.response.data.detail

@@ -3,9 +3,7 @@ import productAPI from '../../mocks/product';
 
 const initialState = {   
   productList: { products: [], loading: false, error: null },
-  productDetails: { product: { reviews: [] }, loading: false, error: null },
-  createReview: { loading: false, error: null, success: false },
-  topRatedProducts: { products: [], loading: false, error: null },
+  productDetails: {product:[], loading: false, error: null}
 };
 
 const productSlice = createSlice({
@@ -79,11 +77,11 @@ export const {
   productTopFailure,
 } = productSlice.actions;
 
-export const fetchProductList = (keyword ,pageNumber='') => async (dispatch) => {
+export const fetchProductList = () => async (dispatch) => {
   try {
     dispatch(productListRequest());
-    const productList = await productAPI.getProductList(keyword , pageNumber);
-    dispatch(productListSuccess(productList));
+    const productList = await productAPI.getProductList();
+    dispatch(productListSuccess({products:productList}));
   } catch (error) {
     dispatch(productListFailure(error.response?.data.detail || error.message));
   }

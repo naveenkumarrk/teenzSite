@@ -1,20 +1,13 @@
 import React, { useState } from "react";
 import "./ShoppingCart.css";
 import { useSelector, useDispatch } from "react-redux";
-import {
-  updateQuantity,   
-  selectCartTotalAmount,
-  deleteItem,
-
-} from "../../slices/CartSlice";
-
 import { MdOutlineClose } from "react-icons/md";
-
 import { Link } from "react-router-dom";
-
-import success from "../../assets/success.png";
+import success from "../../assets/success.png"; 
+// import { deleteItem, resetCart, selectCartTotalAmount, updateQuantity } from "../../redux/slices/CartSlice";
 
 const ShoppingCart = () => {
+  const path = 'http://127.0.0.1:8000'
   const cartItems = useSelector((state) => state.cart.products);
   const dispatch = useDispatch();
 
@@ -33,6 +26,16 @@ const ShoppingCart = () => {
     }
   };
 
+  const calculateSubtotal = () => {
+        return cartItems.reduce((acc, item) => acc + item.quantity * item.price, 0);
+  };
+
+
+  const shippingCost = 5;
+  const VAT = 11;
+  const subtotal = calculateSubtotal();
+  const totalWithExtras = subtotal > 0 ? subtotal + shippingCost + VAT : 0;
+
   const totalPrice = useSelector(selectCartTotalAmount);
 
   const scrollToTop = () => {
@@ -43,7 +46,6 @@ const ShoppingCart = () => {
   };
 
   // current Date
-
   const currentDate = new Date();
 
   const formatDate = (date) => {
@@ -66,6 +68,14 @@ const ShoppingCart = () => {
   const handlePaymentChange = (e) => {
     setSelectedPayment(e.target.value);
   };
+
+
+  const handleOrderConfirmation = () => {
+    dispatch(resetCart()); // Clears the cart items
+    setPayments(true);
+  };
+
+  
 
   return (
     <div>
@@ -145,7 +155,7 @@ const ShoppingCart = () => {
                             <td data-label="Product">
                               <div className="shoppingBagTableImg">
                                 <Link to="/product" onClick={scrollToTop}>
-                                  <img src={item.image} alt="" />
+                                  <img src={path + item.image} alt="" />
                                 </Link>
                               </div>
                             </td>
@@ -379,14 +389,14 @@ const ShoppingCart = () => {
                     <tbody>
                       <tr>
                         <th>Subtotal</th>
-                        <td>${totalPrice.toFixed(2)}</td>
+                        <td>${subtotal.toFixed(2)}</td>
                       </tr>
                       <tr>
                         <th>Shipping</th>
                         <td>
                           <div className="shoppingBagTotalTableCheck">
-                            <p>${(totalPrice === 0 ? 0 : 5).toFixed(2)}</p>
-                            <p>Shipping to Al..</p>
+                            <p>{subtotal > 0 ? shippingCost.toFixed(2) : "0.00"}</p>
+                            {/* <p>Shipping to Al..</p> */}
                             <p
                               onClick={scrollToTop}
                               style={{
@@ -400,13 +410,11 @@ const ShoppingCart = () => {
                       </tr>
                       <tr>
                         <th>VAT</th>
-                        <td>${(totalPrice === 0 ? 0 : 11).toFixed(2)}</td>
+                        <td>${subtotal > 0 ? VAT.toFixed(2) : "0.00"}</td>
                       </tr>
                       <tr>
                         <th>Total</th>
-                        <td>
-                          ${(totalPrice === 0 ? 0 : totalPrice + 16).toFixed(2)}
-                        </td>
+                        <td>${totalWithExtras.toFixed(2)}</td>
                       </tr>
                     </tbody>
                   </table>
@@ -430,14 +438,9 @@ const ShoppingCart = () => {
                   <h4>Billing Details</h4>
                   <div className="checkoutDetailsForm">
                     <form>
-                      <div className="checkoutDetailsFormRow">
-                        <input type="text" placeholder="First Name" />
-                        <input type="text" placeholder="Last Name" />
-                      </div>
-                      <input
-                        type="text"
-                        placeholder="Company Name (optional)"
-                      />
+                      <input type="text" placeholder="Street Address*" required/>
+                      <input type="text" placeholder="Town / City *" required/>
+                      <input type="text" placeholder="Postcode / ZIP *" required/>
                       <select name="country" id="country">
                         <option value="Country / Region" selected disabled>
                           Country / Region
@@ -448,27 +451,7 @@ const ShoppingCart = () => {
                         <option value="United States">United States</option>
                         <option value="Turkey">Turkey</option>
                       </select>
-                      <input type="text" placeholder="Street Address*" />
-                      <input type="text" placeholder="" />
-                      <input type="text" placeholder="Town / City *" />
-                      <input type="text" placeholder="Postcode / ZIP *" />
-                      <input type="text" placeholder="Phone *" />
-                      <input type="mail" placeholder="Your Mail *" />
-                      <div className="checkoutDetailsFormCheck">
-                        <label>
-                          <input type="checkbox" />
-                          <p>Create An Account?</p>
-                        </label>
-                        <label>
-                          <input type="checkbox" />
-                          <p>Ship to a different Address</p>
-                        </label>
-                      </div>
-                      <textarea
-                        cols={30}
-                        rows={8}
-                        placeholder="Order Notes (Optional)"
-                      />
+                      <input type="text" placeholder="Phone *" required/>
                     </form>
                   </div>
                 </div>
@@ -500,7 +483,7 @@ const ShoppingCart = () => {
                         <tbody>
                           <tr>
                             <th>Subtotal</th>
-                            <td>${totalPrice.toFixed(2)}</td>
+                            <td>${subtotal.toFixed(2)}</td>
                           </tr>
                           <tr>
                             <th>Shipping</th>
@@ -513,10 +496,7 @@ const ShoppingCart = () => {
                           <tr>
                             <th>Total</th>
                             <td>
-                              $
-                              {(totalPrice === 0 ? 0 : totalPrice + 16).toFixed(
-                                2
-                              )}
+                            <td>${totalWithExtras.toFixed(2)}</td>
                             </td>
                           </tr>
                         </tbody>
@@ -534,12 +514,6 @@ const ShoppingCart = () => {
                       />
                       <div className="checkoutPaymentMethod">
                         <span>Direct Bank Transfer</span>
-                        <p>
-                          Make your payment directly into our bank account.
-                          Please use your Order ID as the payment reference.Your
-                          order will not be shipped until the funds have cleared
-                          in our account.
-                        </p>
                       </div>
                     </label>
                     <label>
@@ -551,12 +525,7 @@ const ShoppingCart = () => {
                       />
                       <div className="checkoutPaymentMethod">
                         <span>Check Payments</span>
-                        <p>
-                          Phasellus sed volutpat orci. Fusce eget lore mauris
-                          vehicula elementum gravida nec dui. Aenean aliquam
-                          varius ipsum, non ultricies tellus sodales eu. Donec
-                          dignissim viverra nunc, ut aliquet magna posuere eget.
-                        </p>
+                       
                       </div>
                     </label>
                     <label>
@@ -568,12 +537,7 @@ const ShoppingCart = () => {
                       />
                       <div className="checkoutPaymentMethod">
                         <span>Cash on delivery</span>
-                        <p>
-                          Phasellus sed volutpat orci. Fusce eget lore mauris
-                          vehicula elementum gravida nec dui. Aenean aliquam
-                          varius ipsum, non ultricies tellus sodales eu. Donec
-                          dignissim viverra nunc, ut aliquet magna posuere eget.
-                        </p>
+                       
                       </div>
                     </label>
                     <label>
@@ -585,12 +549,7 @@ const ShoppingCart = () => {
                       />
                       <div className="checkoutPaymentMethod">
                         <span>Paypal</span>
-                        <p>
-                          Phasellus sed volutpat orci. Fusce eget lore mauris
-                          vehicula elementum gravida nec dui. Aenean aliquam
-                          varius ipsum, non ultricies tellus sodales eu. Donec
-                          dignissim viverra nunc, ut aliquet magna posuere eget.
-                        </p>
+                        
                       </div>
                     </label>
                     <div className="policyText">
@@ -607,7 +566,7 @@ const ShoppingCart = () => {
                     onClick={() => {
                       handleTabClick("cartTab3");
                       window.scrollTo({ top: 0, behavior: "smooth" });
-                      setPayments(true);
+                      handleOrderConfirmation
                     }}
                   >
                     Place Order
@@ -638,7 +597,7 @@ const ShoppingCart = () => {
                     </div>
                     <div className="orderInfoItem">
                       <p>Total</p>
-                      <h4>${totalPrice.toFixed(2)}</h4>
+                      <h4>${totalWithExtras.toFixed(2)}</h4>
                     </div>
                     <div className="orderInfoItem">
                       <p>Payment Method</p>
@@ -672,7 +631,8 @@ const ShoppingCart = () => {
                         <tbody>
                           <tr>
                             <th>Subtotal</th>
-                            <td>${totalPrice.toFixed(2)}</td>
+                            <td>${subtotal.toFixed(2)}</td>
+
                           </tr>
                           <tr>
                             <th>Shipping</th>
@@ -684,12 +644,7 @@ const ShoppingCart = () => {
                           </tr>
                           <tr>
                             <th>Total</th>
-                            <td>
-                              $
-                              {(totalPrice === 0 ? 0 : totalPrice + 16).toFixed(
-                                2
-                              )}
-                            </td>
+                            <td>${totalWithExtras.toFixed(2)}</td>
                           </tr>
                         </tbody>
                       </table>
@@ -706,3 +661,6 @@ const ShoppingCart = () => {
 };
 
 export default ShoppingCart;
+
+
+

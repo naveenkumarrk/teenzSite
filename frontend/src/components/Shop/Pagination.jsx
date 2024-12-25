@@ -1,81 +1,75 @@
 import React, { useState, useEffect} from "react";
 import ReactPaginate from "react-paginate";
-import { useFetchData } from "../Products/useFetchData"; // Import the generic data fetching hook
-import Product from "../Products/Product"; // Adjust the import path as needed
+import Product from "../Products/Product";
 import { useDispatch, useSelector } from "react-redux";
-import { listProducts } from './../../actions/productActions';
-
+import { fetchProductList } from "../../redux/slices/ProductSlice";
 
 const Pagination = ({ itemsPerPage = 9 }) => {
-  // Use the useFetchData hook to fetch products from Fake Store API
-  // const { 
-  //   data: items, 
-  //   isLoading, 
-  //   error 
-  // } = useFetchData('http://127.0.0.1:8000/api/products/');
-
   const dispatch = useDispatch()
-  const productsList = useSelector((state) => state.productsList)
+  const productList = useSelector((state) => state.product.productList)
+  const { products: items = [], loading, error } = productList || {}
 
-  const {error, loading, products} = productsList
-
-  useEffect(() =>{
-    dispatch(listProducts())
+  useEffect(() => {
+    dispatch(fetchProductList())
   }, [dispatch]); 
-
-  console.log(products)
-
   
   // Pagination state management
   const [itemOffset, setItemOffset] = useState(0);
   const [itemStart, setItemStart] = useState(1);
 
-  // // If data is loading, show a loading state
-  // if (isLoading) {
-  //   return (
-  //     <div className="flex justify-center items-center h-64">
-  //       <p className="text-xl">Loading products...</p>
-  //     </div>
-  //   );
-  // }
+  // If data is loading, show a loading state
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <p className="text-xl">Loading products...</p>
+      </div>
+    );
+  }
 
-  // // If there's an error, show error message
-  // if (error) {
-  //   return (
-  //     <div className="flex justify-center items-center h-64 text-red-500">
-  //       <p className="text-xl">Error loading products: {error.message}</p>
-  //     </div>
-  //   );
-  // }
+  // If there's an error, show error message
+  if (error) {
+    return (
+      <div className="flex justify-center items-center h-64 text-red-500">
+        <p className="text-xl">Error loading products: {error}</p>
+      </div>
+    );
+  }
+
+  // Ensure items is an array
+  const safeItems = Array.isArray(items) ? items : [];
 
   // Calculate pagination details
   const endOffset = itemOffset + itemsPerPage;
-  const currentItems = items.slice(itemOffset, endOffset);
-  const pageCount = Math.ceil(items.length / itemsPerPage);
+  const currentItems = safeItems.slice(itemOffset, endOffset);
+  const pageCount = Math.ceil(safeItems.length / itemsPerPage);
 
   // Page change handler
   const handlePageClick = (event) => {
-    const newOffset = (event.selected * itemsPerPage) % items.length;
+    const newOffset = (event.selected * itemsPerPage) % safeItems.length;
     setItemOffset(newOffset);
     setItemStart(newOffset + 1);
   };
 
   // Items rendering component
   const Items = ({ currentItems }) => {
+    // Add an additional check to ensure currentItems is an array
+    if (!Array.isArray(currentItems)) {
+      return null;
+    }
+
     return (
       <>
-        {currentItems &&
-          currentItems.map((item) => (
-            <div key={item.id} className="w-full">
-              <Product
-                _id={item.id}
-                img={item.image}
-                productName={item.productName}
-                price={item.price}
-                des={item.description}
-              />
-            </div>
-          ))}
+        {currentItems.map((item) => (
+          <div key={item.id || item._id} className="w-full">
+            <Product
+              _id={item.id || item._id}
+              img={item.image || item.img}
+              productName={item.title || item.productName}
+              price={item.price}
+              des={item.description || item.des}
+            />
+          </div>
+        ))}
       </>
     );
   };
@@ -100,8 +94,8 @@ const Pagination = ({ itemsPerPage = 9 }) => {
         />
 
         <p className="text-base font-normal text-lightText">
-          Products from {itemStart} to {Math.min(endOffset, items.length)} of{" "}
-          {items.length}
+          Products from {itemStart} to {Math.min(endOffset, safeItems.length)} of{" "}
+          {safeItems.length}
         </p>
       </div>
     </div>

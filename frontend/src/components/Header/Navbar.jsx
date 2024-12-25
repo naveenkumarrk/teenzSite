@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react';
 import { Link } from "react-router-dom";
 import { 
     Menu, X, ShoppingCart, User, Search, 
+    ChevronDown 
 } from 'lucide-react';
 
 import { FaFacebookF } from "react-icons/fa";
@@ -10,10 +11,17 @@ import { FaInstagram } from "react-icons/fa";
 import { FaYoutube } from "react-icons/fa";
 import { FaPinterest } from "react-icons/fa";
 import { FaRegUser } from 'react-icons/fa';
+import { useDispatch, useSelector } from 'react-redux';
+import { logout } from '../../redux/slices/UserSlice';
 
-const Navbar = ({ cart }) => {
+const Navbar = ({ cart, isAuthenticated }) => {
+    const dispatch = useDispatch();
+    const userLogin = useSelector((state) => state.user);
+    const { userDetails } = userLogin;
+
     const [isScrolled, setIsScrolled] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
     useEffect(() => {
         const handleScroll = () => {
@@ -33,7 +41,11 @@ const Navbar = ({ cart }) => {
         setIsMenuOpen(!isMenuOpen);
     };
 
-    const NavLink = ({ href, children, className = '' }) => (
+    const toggleDropdown = () => {
+        setIsDropdownOpen(!isDropdownOpen);
+    };
+
+    const NavLink = ({ href, children, className = '', onClick }) => (
         <a 
             href={href} 
             className={`
@@ -42,20 +54,27 @@ const Navbar = ({ cart }) => {
                 hover:text-gray-600 
                 ${className}
             `}
+            onClick={onClick}
         >
             {children}
         </a>
     );
 
+    const handleLogout = () => {
+        dispatch(logout());
+        console.log("hi")
+        window.location.reload(); // Reload the page
+    
+      };
+
     return (
         <>
-            <header className={`z-[1001] block fixed top-0 bg-white/20 backdrop-blur-sm w-full transition-all duration-300 ${
-        isMenuOpen ? 'bg-white/20 backdrop-blur' : 'bg-white/20 backdrop-blur'
-      }`}>
-                {/* Desktop Navigation */}
+            <header className={`z-[1001] block fixed top-0 w-full transition-all duration-300 ${
+                isScrolled ? 'bg-transparent backdrop-blur-sm' : 'bg-transparent'
+            }`}>
                 <nav className={`w-full flex items-center justify-between px-6 md:px-16 transition-all duration-300 ${
-          isScrolled ? 'h-16 backdrop-blur' : 'h-20 md:h-24'
-        }`}>
+                    isScrolled ? 'h-16' : 'h-20 md:h-24'
+                }`}>
                     {/* Left Side Navigation */}
                     <div className='hidden md:flex items-center gap-10'>
                         <NavLink href="#about">ABOUT</NavLink>
@@ -65,22 +84,18 @@ const Navbar = ({ cart }) => {
                     {/* Logo */}
                     <div className="absolute left-1/2 transform -translate-x-1/2 transition-all duration-300">
                         <Link to="/">
-                            <h1 
-                                className={`
-                                    font-bold 
-                                    transition-all 
-                                    duration-300 
-                                    font-bostonAngel 
-                                    ${isMenuOpen ? 'text-black' : ''}
-                                    ${isScrolled ? 'text-2xl md:text-3xl' : 'text-3xl md:text-5xl'}
-                                `}
-                            >
+                            <h1 className={`
+                                font-bold 
+                                transition-all 
+                                duration-300 
+                                font-bostonAngel 
+                                ${isMenuOpen ? 'text-black' : ''}
+                                ${isScrolled ? 'text-2xl md:text-3xl' : 'text-3xl md:text-5xl'}
+                            `}>
                                 TEENZ
                             </h1>
                         </Link>
                     </div>
-
-                    
 
                     {/* Right Side Navigation */}
                     <div className="flex justify-between items-center gap-6">
@@ -89,29 +104,65 @@ const Navbar = ({ cart }) => {
                             <NavLink href="#search" className="mr-2">
                                 <Search className="w-5 h-5" />
                             </NavLink>
-                            <NavLink href="/products" className="flex items-center gap-1">
+                            <NavLink href="/products">
                                 <ShoppingCart className="w-5 h-5" />
                                 SHOP
                             </NavLink>
-                            <NavLink href="/cart" className="flex items-center gap-1">
+                            <NavLink href="/cart">
                                 <ShoppingCart className="w-5 h-5" />
                                 CART
                             </NavLink>
-                            <NavLink href="/loginSignUp" className="flex items-center gap-1">
-                                <User className="w-5 h-5" />
-                                PROFILE
-                            </NavLink>
+                            
+                            {/* Auth Dropdown */}
+                            <div className="relative">
+                                <button
+                                    onClick={toggleDropdown}
+                                    className="flex items-center gap-2 hover:text-gray-600"
+                                >
+                                    <User className="w-5 h-5" />
+                                    <ChevronDown className="w-4 h-4" />
+                                </button>
+                                
+                                {isDropdownOpen && (
+                                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
+                                        {!userDetails ? (
+                                            <>
+                                                <Link
+                                                    to="/loginSignUp"
+                                                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                                    onClick={() => setIsDropdownOpen(false)}
+                                                >
+                                                    Login
+                                                </Link>
+                                                <Link
+                                                    to="/loginSignUp"
+                                                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                                    onClick={() => setIsDropdownOpen(false)}
+                                                >
+                                                    Register
+                                                </Link>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Link
+                                                    to="/profile"
+                                                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                                    onClick={() => setIsDropdownOpen(false)}
+                                                >
+                                                    Profile
+                                                </Link>
+                                                <button
+                                                    onClick={handleLogout}
+                                                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                                >
+                                                    Logout
+                                                </button>
+                                            </>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
                         </div>
-                        <div className={`absolute bottom-0 left-0 w-full transition-all duration-500 ${
-            isScrolled ? 'border-b border-black-900' : ''
-          }`}>
-            {!isScrolled && (
-              <div className="flex justify-between px-5">
-                <div className="w-[40rem] border-b border-grey-900"></div>
-                <div className="w-[40rem] border-b border-grey-900"></div>
-              </div>
-            )}
-          </div>
 
                         {/* Mobile Menu Toggle */}
                         <button
@@ -140,19 +191,19 @@ const Navbar = ({ cart }) => {
 
                 {/* Mobile Menu Overlay */}
                 {isMenuOpen && (
-                    <div 
-                        className="
-                            fixed 
-                            inset-0 
-                            bg-white 
-                            z-40 
-                            flex 
-                            flex-col 
-                            h-full
-                            overflow-y-auto
-                            md:hidden
-                        "
-                    >
+                    <div className="
+                        fixed 
+                        inset-0 
+                        bg-white 
+                        z-40 
+                        flex 
+                        flex-col 
+                        h-full
+                        overflow-y-auto
+                        md:hidden
+                    ">
+                        {/* Mobile Menu Content (Same as before) */}
+                        {/* ... Rest of the mobile menu code remains the same ... */}
                         {/* Mobile Menu Top */}
                         <div className="mobile-menuTop p-6">
                             {/* Search Bar */}
@@ -283,7 +334,7 @@ const Navbar = ({ cart }) => {
                 )}
             </header>
         </>
-    )
-}
+    );
+};
 
-export default Navbar
+export default Navbar;

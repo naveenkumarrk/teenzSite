@@ -7,8 +7,6 @@ axios
 
 import { useDispatch, useSelector } from "react-redux";
 // import { addToCart } from "../../../Features/Cart/cartSlice";
-
-
 import product1 from "../../assets/ProductDetail/productdetail-1.jpg";
 import product2 from "../../assets/ProductDetail/productdetail-2.jpg";
 import product3 from "../../assets/ProductDetail/productdetail-3.jpg";
@@ -25,38 +23,26 @@ import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
 
 import "./Details.css";
-import { addToCart } from "../../slices/CartSlice";
+// import { addToCart } from "../../redux/slices/CartSlice";
 import Product from './Product';
 import axios from "axios";
+import productSlice, { fetchProductDetails } from "../../redux/slices/ProductSlice";
 
 const Details = () => {
   // Product images Gallery
 
   const { id } = useParams(); // Extract product ID from URL
-  const [product, setProduct] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [currentImg, setCurrentImg] = useState(0);
 
+  const dispatch = useDispatch();
+  const productDetails = useSelector((state) => state.product.productDetails);
+  const { product, loading, error } = productDetails;
+  console.log(productDetails)
 
   useEffect(() => {
-    const fetchProduct = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        
-        // Replace this with your actual API URL
-        const response = await axios.get(`https://fakestoreapi.com/products/${id}`);
-        setProduct(response.data);
-      } catch (err) {
-        setError(err.message || "Failed to fetch product details");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchProduct();
-  }, [id]);
+    dispatch(fetchProductDetails(id))
+  }, [dispatch, id]); 
+  
 
   // const productImg = [product1, product2, product3, product4];
   const productImg = [product1, product2, product3, product4];
@@ -117,8 +103,6 @@ const Details = () => {
   const colorsName = ["Black", "Red", "Grey"];
 
   // Product Detail to Redux
-
-  const dispatch = useDispatch();
 
 //   const cartItems = useSelector((state) => state.cart.products);
 
@@ -213,7 +197,7 @@ if (error) {
               </div>
             </div>
             <div className="productName">
-              <h1>{product.title}</h1>
+              <h1>{product.productName}</h1>
             </div>
             <div className="productRating">
               <FaStar color="#FEC78A" size={10} />
@@ -221,7 +205,7 @@ if (error) {
               <FaStar color="#FEC78A" size={10} />
               <FaStar color="#FEC78A" size={10} />
               <FaStar color="#FEC78A" size={10} />
-              <p>{product.rating.rate}</p>
+              {/* <p>{product.rating.rate}</p> */}
             </div>
             <div className="productPrice">
               <h3>{product.price}</h3>

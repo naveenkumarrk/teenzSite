@@ -11,7 +11,7 @@ import { IoFilterSharp, IoClose } from "react-icons/io5";
 import { FaCartPlus } from "react-icons/fa";
 import toast from "react-hot-toast";
 import useFetchData from "../Products/useFetchData";
-import { addToCart } from "../../slices/CartSlice";
+import { addToCart } from "../../redux/slices/CartSlice";
 import SideFilter from './filter/SideFilter';
 // import Filter from "../Filters/Filter";  // Uncommented Filter import
 
